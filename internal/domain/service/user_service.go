@@ -17,8 +17,8 @@ func NewUserService(repo output.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) RegisterUser(ctx context.Context, id, email, name string) error {
-	user, err := entity.NewUser(id, email, name)
+func (s *UserService) RegisterUser(ctx context.Context, id, email, name, password string) error {
+	user, err := entity.NewUser(id, email, name, password)
 	if err != nil {
 		return err
 	}

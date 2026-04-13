@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"gotest/internal/domain/entity"
+	"gottest/internal/domain/entity"
 )
 
 type MockUserRepository struct {
@@ -28,7 +28,7 @@ func TestUserService_RegisterUser(t *testing.T) {
 	}
 	service := NewUserService(repo)
 
-	err := service.RegisterUser(context.Background(), "1", "test@example.com", "Test User")
+	err := service.RegisterUser(context.Background(), "1", "test@example.com", "Test User", "password123")
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)

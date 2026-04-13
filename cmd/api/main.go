@@ -2,31 +2,41 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"gotest/internal/adapter/driven/repository"
-	webapi "gotest/internal/adapter/driving/http"
+	adapter_http "gotest/internal/adapter/driving/http"
 	"gotest/internal/domain/service"
+
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
 )
 
 func main() {
-	// 1. Initialize Driven Adapter (Repository)
-	userRepo := repository.NewInMemoryUserRepository()
+	// 1. Initialize SQLite Connection (Pure Go)
+	db, err := gorm.Open(sqlite.Open("users.db"), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("failed to connect database: %v", err)
+	}
 
-	// 2. Initialize Domain Service (Use Case)
+	// 2. Initialize Driven Adapter (SQLite Repository)
+	userRepo := repository.NewSQLiteUserRepository(db)
+
+	// 3. Initialize Domain Service (Use Case)
 	userService := service.NewUserService(userRepo)
 
-	// 3. Initialize Driving Adapter (HTTP Handler)
-	webHandler := webapi.NewUserHandler(userService)
+	// 4. Initialize Driving Adapter (HTTP Handler)
+	userHandler := adapter_http.NewUserHandler(userService)
 
-	// 4. Setup Routes
+	// 5. Setup Routes
 	mux := http.NewServeMux()
-	mux.HandleFunc("/users/register", webHandler.RegisterUser)
-	mux.HandleFunc("/users/get", webHandler.GetUser)
+	mux.HandleFunc("/users/register", userHandler.RegisterUser)
+	mux.HandleFunc("/users/get", userHandler.GetUser)
 
-	// 5. Start Server
+	// 6. Start Server
 	port := ":8080"
-	fmt.Printf("Server starting on %s\n", port)
+	fmt.Printf("Server starting on %s (SQLite mode)\n", port)
 	if err := http.ListenAndServe(port, mux); err != nil {
 		fmt.Printf("Failed to start server: %v\n", err)
 	}
